@@ -65,7 +65,7 @@ const handleSuccesAuth = (data) => {
   userAvatar.src = "";
   userAvatar.alt = "";
 };
-
+//button and avatar after invalid auth
 const handleNoAuth = () => {
   authBtn.classList.remove(".hide");
   userAvatar.classList.add(".hide");
@@ -79,10 +79,10 @@ const handleAuth = () => {
 
 const handleSignout = () => {};
 
+//remember status - signIn or signOut
 const updateStatusAuth = (data) => {
   data.isSignedIn.listen(() => {
     updateStatusAuth();
-
     if (data.isSignedIn.get()) {
       const userData = data.currentUser.get().getBasicProfile();
       handleSuccesAuth(userData);
@@ -92,7 +92,7 @@ const updateStatusAuth = (data) => {
   });
 };
 
-//google API
+// work with google API
 var GoogleAuth; // Google Auth object.
 function initClient() {
   gapi.client
