@@ -56,64 +56,64 @@ createList(musicList, music);
 
 const authBtn = document.querySelector(".auth-btn");
 const userAvatar = document.querySelector(".user-avatar");
+console.log(authBtn, userAvatar);
 
 //button and avatar after succes auth
 const handleSuccesAuth = (data) => {
-  console.log(data);
-  authBtn.classList.add(".hide");
-  userAvatar.classList.remove(".hide");
-  userAvatar.src = "";
-  userAvatar.alt = "";
+  console.log("login");
+  authBtn.classList.add("hide");
+  userAvatar.classList.remove("hide");
+  userAvatar.src = "123";
+  userAvatar.alt = "123";
 };
 //button and avatar after invalid auth
 const handleNoAuth = () => {
-  authBtn.classList.remove(".hide");
-  userAvatar.classList.add(".hide");
+  console.log("NO login");
+  authBtn.classList.remove("hide");
+  userAvatar.classList.add("hide");
   userAvatar.src = "";
   userAvatar.alt = "";
 };
 
 const handleAuth = () => {
-  gapi.auth2;
+  gapi.auth2.getAuthInstance().signIn();
 };
 
-const handleSignout = () => {};
+const handleSignout = () => {
+  gapi.auth2.getAuthInstance().signOut();
+};
 
 //remember status - signIn or signOut
 const updateStatusAuth = (data) => {
   data.isSignedIn.listen(() => {
-    updateStatusAuth();
-    if (data.isSignedIn.get()) {
-      const userData = data.currentUser.get().getBasicProfile();
-      handleSuccesAuth(userData);
-    } else {
-      handleNoAuth();
-    }
+    updateStatusAuth(data);
   });
+
+  if (data.isSignedIn.get()) {
+    const userData = data.currentUser.get().getBasicProfile();
+    handleSuccesAuth(userData);
+  } else {
+    handleNoAuth();
+  }
 };
 
 // work with google API
-var GoogleAuth; // Google Auth object.
 function initClient() {
+  //init client
   gapi.client
     .init({
-      apiKey: API_KEY,
       clientId: CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/drive.metadata.readonly",
+      scope: "https://www.googleapis.com/auth/youtube.readonly",
       discoveryDocs: [
-        "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+        "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest",
       ],
     })
     .then(() => {
       updateStatusAuth(gapi.auth2.getAuthInstance());
+      authBtn.addEventListener("click", handleAuth);
+      userAvatar.addEventListener("click", handleSignout);
     })
-    .catch(() => {
-      authBtn.removeEventListener("click", handleAuth);
-      userAvatar.removeEventListener("click", handleSignout);
-    });
+    .catch(() => {});
 }
 
 gapi.load("client:auth2", initClient);
-
-authBtn.addEventListener("click", handleAuth);
-userAvatar.addEventListener("click", handleSignout);
