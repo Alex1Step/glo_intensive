@@ -7,13 +7,17 @@ const trendingList = document.querySelector(".trending-list");
 const musicList = document.querySelector(".music-list");
 
 const createCard = (dataVideo) => {
-  console.log(dataVideo.snippet.resourceId.videoId);
+  // console.log(dataVideo.snippet.resourceId.videoId);
   const card = document.createElement("div");
   card.classList.add("video-card");
 
   const imgUrl = dataVideo.snippet.thumbnails.high.url;
-  const videoId = dataVideo.snippet.resourceId.videoId;
-  // typeof dataVideo.id === "string" ? dataVideo.id : dataVideo.id.videoId;
+  let videoId;
+  if ("resourceId" in dataVideo.snippet)
+    videoId = dataVideo.snippet.resourceId.videoId;
+  else
+    videoId =
+      typeof dataVideo.id === "string" ? dataVideo.id : dataVideo.id.videoId;
   const titleVideo = dataVideo.snippet.title;
   const dateVideo = dataVideo.snippet.publishedAt;
   const channelTitle = dataVideo.snippet.channelTitle;
@@ -50,8 +54,8 @@ const createList = (wrapper, listVideo) => {
 };
 
 // createList(gloAcademyList, gloAcademy);
-// createList(trendingList, trending);
-// createList(musicList, music);
+createList(trendingList, trending);
+createList(musicList, music);
 
 //authorization in google
 
@@ -81,6 +85,7 @@ const handleSignIn = () => {
 //sign out handler
 const handleSignOut = () => {
   gapi.auth2.getAuthInstance().signOut();
+  createList(gloAcademyList, gloAcademy);
 };
 
 //remember status - signIn or signOut
