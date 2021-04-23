@@ -60,10 +60,6 @@ const createList = (wrapper, listVideo) => {
   });
 };
 
-// createList(gloAcademyList, gloAcademy);
-createList(trendingList, trending);
-createList(musicList, music);
-
 //authorization in google
 
 const authBtn = document.querySelector(".auth-btn");
@@ -75,8 +71,6 @@ const handleSuccesAuth = (data) => {
   userAvatar.classList.remove("hide");
   userAvatar.src = data.getImageUrl();
   userAvatar.alt = data.getName();
-
-  getVideoFromChannel();
 };
 //button and avatar after invalid auth
 const handleNoAuth = () => {
@@ -92,7 +86,6 @@ const handleSignIn = () => {
 //sign out handler
 const handleSignOut = () => {
   gapi.auth2.getAuthInstance().signOut();
-  createList(gloAcademyList, gloAcademy);
 };
 
 //remember status - signIn or signOut
@@ -125,29 +118,37 @@ function initClient() {
       authBtn.addEventListener("click", handleSignIn);
       userAvatar.addEventListener("click", handleSignOut);
     })
+    .then(loadScreen)
     .catch(() => {});
 }
 //initialize Google API
 gapi.load("client:auth2", initClient);
 
 //function for get video from channel
-const getVideoFromChannel = () => {
-  gapi.client.youtube.channels
+const getVideoFromChannel = (channelId) => {
+  gapi.client.youtube.channels.list({
+    part: "snippet, statistics, contentDetails",
+    id: `${channelId}`,
+  });
+};
+
+const requestVideos = (channelId, callback, maxResults = 6) => {
+  gapi.client.youtube.search
     .list({
-      part: "snippet, statistics, contentDetails",
-      id: "UC6cqazSR6CnVMClY0bJI0Lg",
+      part: "snippet",
+      channelId,
+      maxResults,
+      order: "date",
     })
     .then((response) => {
-      gapi.client.youtube.playlistItems
-        .list({
-          part: "snippet, id",
-          maxResults: 6,
-          playlistId:
-            response.result.items[0].contentDetails.relatedPlaylists.uploads,
-        })
-        .then((response) => {
-          createList(gloAcademyList, response.result.items);
-          console.log(response);
-        });
+      callback(response.result.items);
     });
+};
+
+const loadScreen = () => {
+  requestVideos("UC6cqazSR6CnVMClY0bJI0Lg", (data) => {
+    createList(gloAcademyList, data);
+  });
+  createList(trendingList, trending);
+  createList(musicList, music);
 };
