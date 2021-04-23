@@ -5,6 +5,13 @@ const CLIENT_ID =
 const gloAcademyList = document.querySelector(".glo-academy-list");
 const trendingList = document.querySelector(".trending-list");
 const musicList = document.querySelector(".music-list");
+const navMenuMore = document.querySelector(".nav-menu-more");
+const showMore = document.querySelector(".show-more");
+
+showMore.addEventListener("click", (e) => {
+  e.preventDefault();
+  navMenuMore.classList.toggle("nav-menu-more-show");
+});
 
 const createCard = (dataVideo) => {
   // console.log(dataVideo.snippet.resourceId.videoId);
