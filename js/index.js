@@ -7,12 +7,13 @@ const trendingList = document.querySelector(".trending-list");
 const musicList = document.querySelector(".music-list");
 
 const createCard = (dataVideo) => {
+  console.log(dataVideo.snippet.resourceId.videoId);
   const card = document.createElement("div");
   card.classList.add("video-card");
 
   const imgUrl = dataVideo.snippet.thumbnails.high.url;
-  const videoId =
-    typeof dataVideo.id === "string" ? dataVideo.id : dataVideo.id.videoId;
+  const videoId = dataVideo.snippet.resourceId.videoId;
+  // typeof dataVideo.id === "string" ? dataVideo.id : dataVideo.id.videoId;
   const titleVideo = dataVideo.snippet.title;
   const dateVideo = dataVideo.snippet.publishedAt;
   const channelTitle = dataVideo.snippet.channelTitle;
@@ -48,38 +49,37 @@ const createList = (wrapper, listVideo) => {
   });
 };
 
-createList(gloAcademyList, gloAcademy);
-createList(trendingList, trending);
-createList(musicList, music);
+// createList(gloAcademyList, gloAcademy);
+// createList(trendingList, trending);
+// createList(musicList, music);
 
 //authorization in google
 
 const authBtn = document.querySelector(".auth-btn");
 const userAvatar = document.querySelector(".user-avatar");
-console.log(authBtn, userAvatar);
 
 //button and avatar after succes auth
 const handleSuccesAuth = (data) => {
-  console.log("login");
   authBtn.classList.add("hide");
   userAvatar.classList.remove("hide");
-  userAvatar.src = "123";
-  userAvatar.alt = "123";
+  userAvatar.src = data.getImageUrl();
+  userAvatar.alt = data.getName();
+
+  getVideoFromChannel();
 };
 //button and avatar after invalid auth
 const handleNoAuth = () => {
-  console.log("NO login");
   authBtn.classList.remove("hide");
   userAvatar.classList.add("hide");
   userAvatar.src = "";
   userAvatar.alt = "";
 };
-
-const handleAuth = () => {
+//sign in handler
+const handleSignIn = () => {
   gapi.auth2.getAuthInstance().signIn();
 };
-
-const handleSignout = () => {
+//sign out handler
+const handleSignOut = () => {
   gapi.auth2.getAuthInstance().signOut();
 };
 
@@ -110,10 +110,32 @@ function initClient() {
     })
     .then(() => {
       updateStatusAuth(gapi.auth2.getAuthInstance());
-      authBtn.addEventListener("click", handleAuth);
-      userAvatar.addEventListener("click", handleSignout);
+      authBtn.addEventListener("click", handleSignIn);
+      userAvatar.addEventListener("click", handleSignOut);
     })
     .catch(() => {});
 }
-
+//initialize Google API
 gapi.load("client:auth2", initClient);
+
+//function for get video from channel
+const getVideoFromChannel = () => {
+  gapi.client.youtube.channels
+    .list({
+      part: "snippet, statistics, contentDetails",
+      id: "UC6cqazSR6CnVMClY0bJI0Lg",
+    })
+    .then((response) => {
+      gapi.client.youtube.playlistItems
+        .list({
+          part: "snippet, id",
+          maxResults: 6,
+          playlistId:
+            response.result.items[0].contentDetails.relatedPlaylists.uploads,
+        })
+        .then((response) => {
+          createList(gloAcademyList, response.result.items);
+          console.log(response);
+        });
+    });
+};
