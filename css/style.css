@@ -3,13 +3,19 @@
 }
 
 body {
-  font-family: 'Mulish', sans-serif;
+  font-family: "Mulish", sans-serif;
   font-size: 16px;
   font-weight: 400;
 }
 
 button {
   cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .hide {
@@ -47,7 +53,7 @@ button {
 
 .menu-line {
   display: block;
-  background: #1F2022;
+  background: #1f2022;
   width: 20px;
   height: 3px;
   border-radius: 20px;
@@ -58,7 +64,7 @@ button {
 }
 
 .input-group {
-  background: #EBEBEB;
+  background: #ebebeb;
   border-radius: 22px;
   display: flex;
   justify-content: space-between;
@@ -179,11 +185,11 @@ button {
 }
 
 .nav-link:hover {
-  color: #FF0000;
+  color: #ff0000;
 }
 
 .nav-link:hover .icon {
-  fill: #FF0000;
+  fill: #ff0000;
 }
 
 .nav-item .icon {
@@ -247,7 +253,7 @@ button {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #19202C;
+  color: #19202c;
   font-weight: bold;
   font-size: 26px;
   line-height: 33px;
@@ -301,7 +307,7 @@ button {
   font-weight: bold;
   font-size: 16px;
   line-height: 20px;
-  color: #19202C;
+  color: #19202c;
   margin-top: 10px;
   margin-bottom: 4px;
 }
@@ -312,7 +318,7 @@ button {
   justify-content: space-between;
   font-size: 13px;
   line-height: 16px;
-  color: #C2C2C2;
+  color: #c2c2c2;
 }
 
 .video-counter {
@@ -324,15 +330,14 @@ button {
 }
 
 .video-views:after {
-  content: '';
+  content: "";
   width: 2px;
   height: 2px;
-  background-color: #C2C2C2;
+  background-color: #c2c2c2;
   display: inline-block;
   vertical-align: middle;
   margin-left: 5px;
 }
-
 
 .channel-button {
   cursor: pointer;
@@ -346,11 +351,10 @@ button {
   margin-left: 40px;
 }
 
-
 .recommended-channel-subtitle {
   font-size: 16px;
   line-height: 20px;
-  color: #C2C2C2;
+  color: #c2c2c2;
   font-weight: normal;
   margin-left: 19px;
 }
@@ -360,14 +364,14 @@ button {
 }
 
 .subscribe {
-  background: #FF0000;
+  background: #ff0000;
   border-radius: 20px;
   padding: 10px 20px;
   font-weight: normal;
   font-size: 16px;
   line-height: 20px;
   text-align: center;
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
 }
 
@@ -427,12 +431,11 @@ button {
 
   .auth {
     border: none;
-    background-image: url('../img/iconAuth.svg');
+    background-image: url("../img/iconAuth.svg");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
   }
-
 
   .mobile-search {
     display: block;
@@ -471,7 +474,6 @@ button {
     display: none;
   }
 
-
   .mobile-sidebar {
     display: block;
     position: fixed;
@@ -509,5 +511,4 @@ button {
 }
 
 @media (max-width: 860px) {
-
 }

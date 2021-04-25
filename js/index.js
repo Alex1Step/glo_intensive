@@ -10,14 +10,7 @@ const CLIENT_ID =
 
 /*ELEMENTS FOR WORK*/
 
-const gloAcademyList = document.querySelector(".glo-academy-list");
-const gloAcademyListTitle = document.getElementsByClassName("channel-text")[0];
-console.log(gloAcademyListTitle);
-const gloAcademyListAvatar = document.getElementsByClassName(
-  "channel-avatar"
-)[0];
-const trendingList = document.querySelector(".trending-list");
-const musicList = document.querySelector(".music-list");
+const content = document.querySelector(".content");
 const navMenuMore = document.querySelector(".nav-menu-more");
 const showMore = document.querySelector(".show-more");
 const formSearch = document.querySelector(".form-search");
@@ -28,8 +21,9 @@ const userAvatar = document.querySelector(".user-avatar");
 
 /*FUNCTIONS*/
 
+//create lists of videos
 const createCard = (dataVideo) => {
-  const card = document.createElement("div");
+  const card = document.createElement("li");
   card.classList.add("video-card");
 
   const imgUrl = dataVideo.snippet.thumbnails.high.url;
@@ -66,12 +60,31 @@ const createCard = (dataVideo) => {
   return card;
 };
 
-const createList = (wrapper, listVideo) => {
-  wrapper.textContent = "";
+const createList = (listVideo, title, clear) => {
+  const channel = document.createElement("section");
+  channel.classList.add("channel");
+
+  if (clear) {
+    content.textContent = "";
+  }
+
+  if (title) {
+    const header = document.createElement("h2");
+    header.textContent = title;
+    channel.insertAdjacentElement("afterbegin", header);
+  }
+
+  const wrapper = document.createElement("ul");
+  wrapper.classList.add("video-list");
+
+  channel.insertAdjacentElement("beforeend", wrapper);
+
   listVideo.forEach((element) => {
     const card = createCard(element);
     wrapper.append(card);
   });
+
+  content.insertAdjacentElement("beforeend", channel);
 };
 
 //create list of subscriptions
@@ -83,7 +96,7 @@ const createSubscrItem = (item) => {
   const channelLink = item.snippet.resourceId.channelId;
 
   sub.innerHTML = `
-  <a href="https://www.youtube.com/channel/${channelLink}" class="nav-link">
+  <a href="https://www.youtube.com/channel/${channelLink}" class="nav-link" data-channel-id="${channelLink}" data-title="${channelTitle}">
     <img src="${channelSrcImg}" alt="Photo: ${channelTitle}" class="nav-image">
     <span class="nav-text">${channelTitle}</span>
   </a>
@@ -106,6 +119,9 @@ const handleSuccesAuth = (data) => {
   userAvatar.classList.remove("hide");
   userAvatar.src = data.getImageUrl();
   userAvatar.alt = data.getName();
+  requestSubscriptions((data) => {
+    createSubscrList(subscr, data);
+  });
 };
 //button and avatar after invalid auth
 const handleNoAuth = () => {
@@ -139,7 +155,7 @@ const updateStatusAuth = (data) => {
 
 // work with google API
 function initClient() {
-  //init client
+  //init GOOGLE client
   gapi.client
     .init({
       clientId: CLIENT_ID,
@@ -157,11 +173,17 @@ function initClient() {
     .catch(() => {});
 }
 
-// const getVideoFromChannel = (channelId) => {
-//   gapi.client.youtube.channels.list({
-//     part: "snippet, statistics, contentDetails",
-//     id: `${channelId}`,
-//   });
+// const getVideoFromChannel = (channelId, callback, maxResults = 18) => {
+//   gapi.client.youtube.channels
+//     .list({
+//       part: "snippet, statistics, contentDetails",
+//       id: `${channelId}`,
+//       order: "relevance",
+//     })
+//     .then((response) => {
+//       console.log(response);
+//       // callback(response.result.items);
+//     });
 // };
 
 //function for get video from channel
@@ -177,20 +199,20 @@ const requestVideos = (channelId, callback, maxResults = 6) => {
       callback(response.result.items);
     });
 };
-
+//function for get video from TREND
 const requestTrending = (callback, maxResults = 6) => {
   gapi.client.youtube.videos
     .list({
       part: "snippet, statistics",
       chart: "mostPopular",
-      regionCode: "RU",
+      regionCode: "BY",
       maxResults,
     })
     .then((response) => {
       callback(response.result.items);
     });
 };
-
+//function for get video from CATEGORY MUSIC
 const requestMusic = (callback, maxResults = 6) => {
   gapi.client.youtube.videos
     .list({
@@ -203,6 +225,7 @@ const requestMusic = (callback, maxResults = 6) => {
     .then((response) => callback(response.result.items));
 };
 
+//function for get users subscriptions
 const requestSubscriptions = (callback, maxResults = 6) => {
   gapi.client.youtube.subscriptions
     .list({
@@ -216,6 +239,7 @@ const requestSubscriptions = (callback, maxResults = 6) => {
     });
 };
 
+//handle search form
 const requestSearch = (searchText, callback, maxResults = 6) => {
   gapi.client.youtube.search
     .list({
@@ -229,18 +253,20 @@ const requestSearch = (searchText, callback, maxResults = 6) => {
     });
 };
 
+//init main content part with videos
 const loadScreen = () => {
+  content.textContent = "";
+
   requestVideos("UC6cqazSR6CnVMClY0bJI0Lg", (data) => {
-    createList(gloAcademyList, data);
-  });
-  requestTrending((data) => {
-    createList(trendingList, data);
-  });
-  requestMusic((data) => {
-    createList(musicList, data);
-  });
-  requestSubscriptions((data) => {
-    createSubscrList(subscr, data);
+    createList(data, "Bad Comedian", false);
+
+    requestTrending((data) => {
+      createList(data, "Trend", false);
+
+      requestMusic((data) => {
+        createList(data, "Music", false);
+      });
+    });
   });
 };
 
@@ -256,10 +282,24 @@ showMore.addEventListener("click", (e) => {
 formSearch.addEventListener("submit", (event) => {
   event.preventDefault();
   requestSearch(formSearch.elements.search.value, (data) => {
-    createList(gloAcademyList, data);
-    gloAcademyListTitle.innerText = "Results";
-    gloAcademyListAvatar.classList.toggle("hide");
+    createList(data, "Result", true);
   });
+});
+
+//handle click on any subscription
+subscr.addEventListener("click", (event) => {
+  event.preventDefault();
+  const target = event.target;
+  const targetLink = target.closest(".nav-link");
+  const channelId = targetLink.dataset.channelId;
+  const title = targetLink.dataset.title;
+  requestVideos(
+    channelId,
+    (data) => {
+      createList(data, title, true);
+    },
+    18
+  );
 });
 
 /*INIT Google API*/
