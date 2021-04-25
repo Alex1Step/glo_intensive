@@ -1,17 +1,27 @@
 /*CONSTANTS*/
-
+//1st
 const API_KEY = "AIzaSyBKCuMSDnxnVffTFYX_I7JyABuL8XfOFsk";
 const CLIENT_ID =
   "209354604196-0riptdgdnlr1aqd2arqrlvoacaku1ess.apps.googleusercontent.com";
+//2nd
+// const API_KEY = "AIzaSyC55VhD2V49BEIkvrylCZJ4eJdHZztoqiQ";
+// const CLIENT_ID =
+//   "555793957146-k8l74kh7nhp9ep2i8eg9estn1olds5cj.apps.googleusercontent.com";
 
 /*ELEMENTS FOR WORK*/
 
 const gloAcademyList = document.querySelector(".glo-academy-list");
+const gloAcademyListTitle = document.getElementsByClassName("channel-text")[0];
+console.log(gloAcademyListTitle);
+const gloAcademyListAvatar = document.getElementsByClassName(
+  "channel-avatar"
+)[0];
 const trendingList = document.querySelector(".trending-list");
 const musicList = document.querySelector(".music-list");
 const navMenuMore = document.querySelector(".nav-menu-more");
 const showMore = document.querySelector(".show-more");
 const formSearch = document.querySelector(".form-search");
+const subscr = document.querySelector(".subscriptions");
 //authorization in google
 const authBtn = document.querySelector(".auth-btn");
 const userAvatar = document.querySelector(".user-avatar");
@@ -61,6 +71,32 @@ const createList = (wrapper, listVideo) => {
   listVideo.forEach((element) => {
     const card = createCard(element);
     wrapper.append(card);
+  });
+};
+
+//create list of subscriptions
+const createSubscrItem = (item) => {
+  const sub = document.createElement("li");
+  sub.classList.add("nav-item");
+  const channelTitle = item.snippet.title;
+  const channelSrcImg = item.snippet.thumbnails.default.url;
+  const channelLink = item.snippet.resourceId.channelId;
+
+  sub.innerHTML = `
+  <a href="https://www.youtube.com/channel/${channelLink}" class="nav-link">
+    <img src="${channelSrcImg}" alt="Photo: ${channelTitle}" class="nav-image">
+    <span class="nav-text">${channelTitle}</span>
+  </a>
+  `;
+
+  return sub;
+};
+
+const createSubscrList = (wrapper, listSubscr) => {
+  wrapper.textContent = "";
+  listSubscr.forEach((element) => {
+    const subscrItem = createSubscrItem(element);
+    wrapper.append(subscrItem);
   });
 };
 
@@ -127,6 +163,7 @@ function initClient() {
 //     id: `${channelId}`,
 //   });
 // };
+
 //function for get video from channel
 const requestVideos = (channelId, callback, maxResults = 6) => {
   gapi.client.youtube.search
@@ -166,16 +203,20 @@ const requestMusic = (callback, maxResults = 6) => {
     .then((response) => callback(response.result.items));
 };
 
-const requestSubscriptions = (callback) => {
+const requestSubscriptions = (callback, maxResults = 6) => {
   gapi.client.youtube.subscriptions
     .list({
       part: "snippet",
       mine: true,
+      order: "relevance",
+      maxResults,
     })
-    .then((response) => console.log(response));
+    .then((response) => {
+      callback(response.result.items);
+    });
 };
 
-const requestSearch = (searchText, callback) => {
+const requestSearch = (searchText, callback, maxResults = 6) => {
   gapi.client.youtube.search
     .list({
       part: "snippet",
@@ -198,7 +239,9 @@ const loadScreen = () => {
   requestMusic((data) => {
     createList(musicList, data);
   });
-  requestSubscriptions((data) => {});
+  requestSubscriptions((data) => {
+    createSubscrList(subscr, data);
+  });
 };
 
 /*LISTENERS*/
@@ -212,6 +255,11 @@ showMore.addEventListener("click", (e) => {
 //handler for search form in header
 formSearch.addEventListener("submit", (event) => {
   event.preventDefault();
+  requestSearch(formSearch.elements.search.value, (data) => {
+    createList(gloAcademyList, data);
+    gloAcademyListTitle.innerText = "Results";
+    gloAcademyListAvatar.classList.toggle("hide");
+  });
 });
 
 /*INIT Google API*/
