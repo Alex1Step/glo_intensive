@@ -15,6 +15,7 @@ const navMenuMore = document.querySelector(".nav-menu-more");
 const showMore = document.querySelector(".show-more");
 const formSearch = document.querySelector(".form-search");
 const subscr = document.querySelector(".subscriptions");
+const likedVideos = document.querySelector(".nav-item-liked");
 //authorization in google
 const authBtn = document.querySelector(".auth-btn");
 const userAvatar = document.querySelector(".user-avatar");
@@ -38,7 +39,9 @@ const createCard = (dataVideo) => {
   const channelTitle = dataVideo.snippet.channelTitle;
   if (dataVideo.statistics === undefined) viewsCount = "";
   else
-    viewsCount = `<span class="video-views">${dataVideo.statistics.viewCount} views</span>`;
+    viewsCount = `<span class="video-views">${getViewCount(
+      dataVideo.statistics.viewCount
+    )}</span>`;
 
   card.innerHTML = `
       <div class="video-thumb">
@@ -50,14 +53,32 @@ const createCard = (dataVideo) => {
       <div class="video-info">
         <span class="video-counter">
           ${viewsCount}
-          <span class="video-date">${new Date(dateVideo).toLocaleString(
-            "ru-RU"
-          )}</span>
+          <span class="video-date">${getTimeInterval(dateVideo)}</span>
         </span>
         <span class="video-channel">${channelTitle}</span>
       </div>
   `;
   return card;
+};
+
+const getTimeInterval = (date) => {
+  const currentTime = Date.parse(new Date());
+  const uploadTime = Date.parse(new Date(date));
+  const diffDay = Math.round((currentTime - uploadTime) / 86400000);
+  if (diffDay > 1) {
+    if (diffDay > 730) return Math.round(diffDay / 365) + " years ago";
+    if (diffDay > 365) return "One year ago";
+    if (diffDay > 60) return Math.round(diffDay / 30) + " month ago";
+    if (diffDay < 30) return diffDay + " days ago";
+    else return "One month ago";
+  }
+  return "One day ago";
+};
+
+const getViewCount = (count) => {
+  if (count >= 1000000) return Math.round(count / 1000000) + "M views";
+  if (count >= 1000) return Math.round(count / 1000) + "K views";
+  return count + " views";
 };
 
 const createList = (listVideo, title, clear) => {
@@ -122,6 +143,7 @@ const handleSuccesAuth = (data) => {
   requestSubscriptions((data) => {
     createSubscrList(subscr, data);
   });
+  loadScreen();
 };
 //button and avatar after invalid auth
 const handleNoAuth = () => {
@@ -169,22 +191,11 @@ function initClient() {
       authBtn.addEventListener("click", handleSignIn);
       userAvatar.addEventListener("click", handleSignOut);
     })
-    .then(loadScreen)
-    .catch(() => {});
+    // .then(loadScreen)
+    .catch((err) => {
+      console.error("ERROR: " + err);
+    });
 }
-
-// const getVideoFromChannel = (channelId, callback, maxResults = 18) => {
-//   gapi.client.youtube.channels
-//     .list({
-//       part: "snippet, statistics, contentDetails",
-//       id: `${channelId}`,
-//       order: "relevance",
-//     })
-//     .then((response) => {
-//       console.log(response);
-//       // callback(response.result.items);
-//     });
-// };
 
 //function for get video from channel
 const requestVideos = (channelId, callback, maxResults = 6) => {
@@ -194,6 +205,18 @@ const requestVideos = (channelId, callback, maxResults = 6) => {
       channelId,
       maxResults,
       order: "date",
+    })
+    .then((response) => {
+      callback(response.result.items);
+    });
+};
+//function for get recomended videos
+const requestRecomendedVideos = (callback, maxResults = 6) => {
+  gapi.client.youtube.activities
+    .list({
+      part: "snippet",
+      maxResults,
+      home: true,
     })
     .then((response) => {
       callback(response.result.items);
@@ -253,6 +276,20 @@ const requestSearch = (searchText, callback, maxResults = 6) => {
     });
 };
 
+//function for get videos which user likes
+const requestLikedVideos = (callback, maxResults = 12) => {
+  gapi.client.youtube.videos
+    .list({
+      myRating: "like",
+      part: "snippet, statistics",
+      maxResults,
+      order: "relevance",
+    })
+    .then((response) => {
+      callback(response.result.items);
+    });
+};
+
 //init main content part with videos
 const loadScreen = () => {
   content.textContent = "";
@@ -300,6 +337,13 @@ subscr.addEventListener("click", (event) => {
     },
     18
   );
+});
+
+likedVideos.addEventListener("click", (event) => {
+  event.preventDefault();
+  requestLikedVideos((data) => {
+    createList(data, "Liked Videos", true);
+  }, 18);
 });
 
 /*INIT Google API*/
