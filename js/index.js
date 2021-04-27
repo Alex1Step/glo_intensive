@@ -16,6 +16,7 @@ const showMore = document.querySelector(".show-more");
 const formSearch = document.querySelector(".form-search");
 const subscr = document.querySelector(".subscriptions");
 const likedVideos = document.querySelector(".nav-item-liked");
+const likedVideosM = document.querySelector(".nav-item-liked-mobile");
 //authorization in google
 const authBtn = document.querySelector(".auth-btn");
 const userAvatar = document.querySelector(".user-avatar");
@@ -173,6 +174,9 @@ const updateStatusAuth = (data) => {
   } else {
     handleNoAuth();
   }
+  requestTrending((data) => {
+    createList(data, "Trend", false);
+  }, 18);
 };
 
 // work with google API
@@ -180,6 +184,7 @@ function initClient() {
   //init GOOGLE client
   gapi.client
     .init({
+      apiKey: API_KEY,
       clientId: CLIENT_ID,
       scope: "https://www.googleapis.com/auth/youtube.readonly",
       discoveryDocs: [
@@ -211,17 +216,17 @@ const requestVideos = (channelId, callback, maxResults = 6) => {
     });
 };
 //function for get recomended videos
-const requestRecomendedVideos = (callback, maxResults = 6) => {
-  gapi.client.youtube.activities
-    .list({
-      part: "snippet",
-      maxResults,
-      home: true,
-    })
-    .then((response) => {
-      callback(response.result.items);
-    });
-};
+// const requestRecomendedVideos = (callback, maxResults = 6) => {
+//   gapi.client.youtube.activities
+//     .list({
+//       part: "snippet",
+//       maxResults,
+//       home: true,
+//     })
+//     .then((response) => {
+//       callback(response.result.items);
+//     });
+// };
 //function for get video from TREND
 const requestTrending = (callback, maxResults = 6) => {
   gapi.client.youtube.videos
@@ -295,7 +300,7 @@ const loadScreen = () => {
   content.textContent = "";
 
   requestVideos("UC6cqazSR6CnVMClY0bJI0Lg", (data) => {
-    createList(data, "Bad Comedian", false);
+    createList(data, "Bad Comedian", true);
 
     requestTrending((data) => {
       createList(data, "Trend", false);
@@ -340,6 +345,13 @@ subscr.addEventListener("click", (event) => {
 });
 
 likedVideos.addEventListener("click", (event) => {
+  event.preventDefault();
+  requestLikedVideos((data) => {
+    createList(data, "Liked Videos", true);
+  }, 18);
+});
+
+likedVideosM.addEventListener("click", (event) => {
   event.preventDefault();
   requestLikedVideos((data) => {
     createList(data, "Liked Videos", true);
